@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PhotoApp</string>
+    <string name="content">Nội dung</string>
+    <string name="title_activity_settings">Cài đặt</string>
+    <string name="title_language">Ngôn ngữ</string>
+    <string name="select_language_title">Chọn ngôn ngữ</string>
+    <string name="signature_title">Mật khẩu của bạn</string>
+    <string name="display_title">Hiển thị</string>
+    <string name="darkmode_summary_on">"Chế độ tối màu "</string>
+    <string name="darkmode_summary_off">Chế độ tối màu đang tắt</string>
+    <string name="darkmode_title">Chế độ tối màu</string>
+    <string name="security_title">Bảo mật</string>
+</resources>
