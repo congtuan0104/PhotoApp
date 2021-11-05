@@ -11,4 +11,7 @@
     <string name="darkmode_summary_off">Chế độ tối màu đang tắt</string>
     <string name="darkmode_title">Chế độ tối màu</string>
     <string name="security_title">Bảo mật</string>
+    <string name="find_hint">Thời gian, địa điểm, con người</string>
+    <string name="Setting">Cài đặt</string>
+    <string name="Search">Tìm kiếm</string>
 </resources>
