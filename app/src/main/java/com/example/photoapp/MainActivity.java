@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == STORAGE_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Permission Accepted", Toast.LENGTH_SHORT).show();
@@ -108,6 +109,10 @@ public class MainActivity extends AppCompatActivity {
             case R.id.settings:{
                 Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
                 startActivity(intent);
+            }
+            case R.id.about:{
+                Intent intent2=new Intent(getApplicationContext(),InfomationActivity.class);
+                startActivity(intent2);
             }
             break;
         };

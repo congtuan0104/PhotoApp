@@ -40,9 +40,8 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:text="Phiên bản"
-            android:textSize="20dp"
             android:textColor="@color/black"
-            />
+            android:textSize="20dp" />
 
         <TextView
             android:id="@+id/priceproduct"
