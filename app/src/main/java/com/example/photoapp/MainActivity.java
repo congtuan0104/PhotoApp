@@ -107,14 +107,17 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.settings:{
-                Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
-                startActivity(intent);
+                Intent settingsIntent=new Intent(getApplicationContext(),SettingsActivity.class);
+                startActivity(settingsIntent);
+                break;
             }
+
             case R.id.about:{
-                Intent intent2=new Intent(getApplicationContext(),InfomationActivity.class);
-                startActivity(intent2);
+                Intent infoIntent=new Intent(getApplicationContext(),InfomationActivity.class);
+                startActivity(infoIntent);
+                break;
             }
-            break;
+
         };
         return super.onOptionsItemSelected(item);
     }
