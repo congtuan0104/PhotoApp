@@ -109,12 +109,14 @@ public class MainActivity extends AppCompatActivity {
             case R.id.settings:{
                 Intent intent=new Intent(getApplicationContext(),SettingsActivity.class);
                 startActivity(intent);
+                break;
             }
             case R.id.about:{
                 Intent intent2=new Intent(getApplicationContext(),InfomationActivity.class);
                 startActivity(intent2);
+                break;
             }
-            break;
+            
         };
         return super.onOptionsItemSelected(item);
     }
