@@ -18,4 +18,11 @@
     <string name="Search">Search</string>
     // End: Settings Preference
 
+    //PIN activity
+    <string name="PIN_activity_title">Change your password (6 digits)</string>
+    <string name="input_old_PIN">Old PIN</string>
+    <string name="input_new_PIN">New PIN</string>
+    <string name="btn_change_PIN">Change PIN</string>
+    <string name="Note_PIN">Note: Default PIN is 123456</string>
+
 </resources>

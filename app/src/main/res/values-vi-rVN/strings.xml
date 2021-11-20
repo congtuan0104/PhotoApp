@@ -14,4 +14,9 @@
     <string name="find_hint">Thời gian, địa điểm, con người</string>
     <string name="Setting">Cài đặt</string>
     <string name="Search">Tìm kiếm</string>
+    <string name="input_old_PIN">Nhập mã PIN cũ</string>
+    <string name="input_new_PIN">Nhập mã PIN mới</string>
+    <string name="PIN_activity_title">Thay đổi mật khẩu (6 số)</string>
+    <string name="btn_change_PIN">Đổi mã PIN</string>
+    <string name="Note_PIN">Lưu ý: Mật khẩu mặc định là 123456</string>
 </resources>
