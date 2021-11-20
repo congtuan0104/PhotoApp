@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:id="@+id/txtTitlePIN"
+        android:textSize="20dp"
+        android:text="@string/PIN_activity_title"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/edtOldPIN"
+        android:layout_below="@id/txtTitlePIN"
+        android:layout_marginTop="30dp"
+        android:id="@+id/txtOldPIN"
+        android:text="@string/input_old_PIN"/>
+
+    <EditText
+        android:id="@+id/edtOldPIN"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtOldPIN"
+        android:layout_centerHorizontal="true"
+        android:letterSpacing="1.4"
+        android:layout_marginTop="5dp"
+        android:gravity="center"
+        android:inputType="textPassword"
+        android:maxLength="6" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/edtNewPIN"
+        android:layout_below="@id/edtOldPIN"
+        android:layout_marginTop="20dp"
+        android:id="@+id/txtNewPIN"
+        android:text="@string/input_new_PIN"/>
+
+    <EditText
+        android:id="@+id/edtNewPIN"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtNewPIN"
+        android:layout_centerHorizontal="true"
+        android:gravity="center"
+        android:letterSpacing="1.4"
+        android:layout_marginTop="5dp"
+        android:inputType="textPassword"
+        android:maxLength="6" />
+
+    <Button
+        android:id="@+id/btnVerify"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:clickable="true"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/edtNewPIN"
+        android:text="@string/btn_change_PIN"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnVerify"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:id="@+id/txtNote"
+        android:text="@string/Note_PIN"/>
+
+
+
+</RelativeLayout>
