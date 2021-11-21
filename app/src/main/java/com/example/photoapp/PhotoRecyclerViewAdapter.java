@@ -3,6 +3,7 @@ package com.example.photoapp;
 import static android.content.ContentValues.TAG;
 
 import android.content.Context;
+import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecyclerViewAdapter.MyViewHolder> {
     ArrayList<Photo> photos;
@@ -35,11 +37,9 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        String name = photos.get(position).getImgName();
-        String imgPath = photos.get(position).getImgPath();
-        //holder.photoTextView.setText(name);
+        Uri imgUri = photos.get(position).getImgUri();
         Glide.with(context)
-                .load(imgPath)
+                .load(imgUri)
                 .centerCrop()
                 .into(holder.img);
     }
@@ -55,7 +55,6 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
-            photoTextView = (TextView) itemView.findViewById(R.id.photoTextView);
             img = (ImageView) itemView.findViewById(R.id.photo);
         }
     }

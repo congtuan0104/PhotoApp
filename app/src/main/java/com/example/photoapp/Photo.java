@@ -1,12 +1,21 @@
 package com.example.photoapp;
 
+import android.net.Uri;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class Photo {
     private String imgName;
-    private String imgPath;
+    private Uri imgUri;
+    private Date date;
+    private String geoLocation;
 
-    public Photo(String imgPath,String imgName) {
-        this.imgPath = imgPath;
-        this.imgName  = imgName;
+    public Photo(String imgName, Uri imgUri, Date date, String geoLocation) {
+        this.imgName = imgName;
+        this.imgUri = imgUri;
+        this.date = date;
+        this.geoLocation = geoLocation;
     }
 
     public String getImgName() {
@@ -17,11 +26,35 @@ public class Photo {
         this.imgName = imgName;
     }
 
-    public String getImgPath() {
-        return imgPath;
+    public Uri getImgUri() {
+        return imgUri;
     }
 
-    public void setImgPath(String imgPath) {
-        this.imgPath = imgPath;
+    public void setImgUri(Uri imgUri) {
+        this.imgUri = imgUri;
     }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public String getGeoLocation() {
+        return geoLocation;
+    }
+
+    public void setGeoLocation(String geoLocation) {
+        this.geoLocation = geoLocation;
+    }
+
+    public String getStringDate(){
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
+        String strDate= formatter.format(date);
+        return strDate;
+    }
+
+
 }
