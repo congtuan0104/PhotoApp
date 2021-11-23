@@ -14,4 +14,11 @@
     <string name="find_hint">Thời gian, địa điểm, con người</string>
     <string name="Setting">Cài đặt</string>
     <string name="Search">Tìm kiếm</string>
+
+    <!-- String for Infomation Activity -->
+    <string name="version">Phiên bản</string>
+    <string name="license_terms">Điều khoản</string>
+    <string name="policy">Chính sách</string>
+    <string name="team_info">Thông tin nhóm</string>
+    <string name="feedback">Phản hồi</string>
 </resources>

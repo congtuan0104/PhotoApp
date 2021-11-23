@@ -1,14 +1,40 @@
 package com.example.photoapp;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
 
-public class InfomationActivity extends AppCompatActivity {
+import androidx.fragment.app.FragmentActivity;
+import androidx.fragment.app.FragmentTransaction;
+
+import csu.matos.fragment.InfoFragment;
+
+public class InfomationActivity extends FragmentActivity {
+    FragmentTransaction ft;
+    InfoFragment infoFragment;
+    InfoFragment fragmentInfo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.infomation_activity);
+        setContentView(R.layout.activity_main);
+
+        ft = getSupportFragmentManager().beginTransaction();
+
+        infoFragment = InfoFragment.newInstance(R.string.version);
+        ft.replace(R.id.first_fragment, infoFragment);
+
+        fragmentInfo = InfoFragment.newInstance(R.string.license_terms);
+        ft.replace(R.id.second_fragment, fragmentInfo);
+
+        fragmentInfo = InfoFragment.newInstance(R.string.policy);
+        ft.replace(R.id.third_fragment, fragmentInfo);
+
+        fragmentInfo = InfoFragment.newInstance(R.string.team_info);
+        ft.replace(R.id.fourth_fragment, fragmentInfo);
+
+        fragmentInfo = InfoFragment.newInstance(R.string.feedback);
+        ft.replace(R.id.fifth_fragment, fragmentInfo);
+
+        ft.commit();
+
     }
 }

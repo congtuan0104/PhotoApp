@@ -16,6 +16,15 @@
     <string name="find_hint">Time, Place, People</string>
     <string name="Setting">Setting</string>
     <string name="Search">Search</string>
+
+    <!-- String for Infomation Activity -->
+    <string name="version">Version</string>
+    <string name="license_terms">License Term</string>
+    <string name="policy">Policy</string>
+    <string name="team_info">Team Info</string>
+    <string name="feedback">Feedback</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
     // End: Settings Preference
 
 </resources>
