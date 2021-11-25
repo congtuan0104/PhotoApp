@@ -1,7 +1,9 @@
 package com.example.photoapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +16,7 @@ public class InfomationActivity extends AppCompatActivity {
     FragmentTransaction ft;
     InfoFragment infoFragment;
     InfoFragment fragmentInfo;
+    FrameLayout fragment_layout;
 
     ImageButton btnInfo;
     @Override
@@ -40,5 +43,13 @@ public class InfomationActivity extends AppCompatActivity {
 
         ft.commit();
 
+        fragment_layout = (FrameLayout) findViewById(R.id.fourth_fragment);
+        fragment_layout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MyTeamInfoActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }

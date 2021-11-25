@@ -18,7 +18,7 @@ public class MyTeamInfoActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_myteaminfo);
 
         listMember = new ArrayList<>();
         listMember.add(new TeamMember("Trịnh Quyền Đế", "19120192"));
@@ -29,7 +29,7 @@ public class MyTeamInfoActivity extends AppCompatActivity {
 
         memberAdapterListView = new MemberAdapterListView(listMember);
 
-        listViewMember = findViewById(R.id.list_member);
+        listViewMember = (ListView) findViewById(R.id.list_member);
         listViewMember.setAdapter(memberAdapterListView);
 
         listViewMember.setOnItemClickListener(new AdapterView.OnItemClickListener() {

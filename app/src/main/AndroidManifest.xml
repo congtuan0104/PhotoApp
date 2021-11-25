@@ -14,9 +14,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PhotoApp">
         <activity
-            android:name=".MyTeamInfoActivity"
-            android:exported="false" />
-        <activity
             android:name=".InfomationActivity"
             android:exported="true"
             android:label="@string/title_activity_information"
@@ -24,12 +21,15 @@
         <activity
             android:name=".Passcode"
             android:label="@string/title_activity_information"
-
             android:exported="true" />
         <activity
             android:name=".SettingsActivity"
             android:exported="true"
             android:label="@string/title_activity_settings" />
+        <activity
+            android:name=".MyTeamInfoActivity"
+            android:exported="true"
+            android:label="@string/title_activity_teaminfo" />
         <activity
             android:name=".MainActivity"
             android:exported="true">

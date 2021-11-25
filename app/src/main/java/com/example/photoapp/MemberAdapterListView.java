@@ -10,6 +10,9 @@ import java.util.ArrayList;
 public class MemberAdapterListView extends BaseAdapter {
     ArrayList<TeamMember> listMember = new ArrayList<>();
 
+    MemberAdapterListView() {
+
+    }
     MemberAdapterListView(ArrayList<TeamMember> listMember) {
         this.listMember = listMember;
     }
