@@ -35,9 +35,6 @@ public class ListPhotosRecyclerViewAdapter extends RecyclerView.Adapter<ListPhot
         String strDate = mListPhotos.get(position).getDate();
         ArrayList<Photo> photos = mListPhotos.get(position).getPhotos();
         PhotoRecyclerViewAdapter mAdapter = new PhotoRecyclerViewAdapter(mContext, photos);
-        for(int j=0;j<photos.size();j++){
-            Log.e("Helo", photos.get(j).getStringDate() );
-        }
         holder.dateTxt.setText(strDate);
         holder.photoRecyclerView.setAdapter(mAdapter);
         holder.photoRecyclerView.setLayoutManager(new GridLayoutManager(mContext,3));

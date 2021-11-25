@@ -28,6 +28,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,10 +53,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         requestStoragePermission();
 
     }
     public ArrayList<ListPhotos> getListOfListPhoto(ArrayList<Photo> photos){
+        if(photos.size() == 0){
+            return new ArrayList<ListPhotos>();
+        }
         String currentDate = photos.get(0).getStringDate();
         ArrayList<ListPhotos> listPhotos =  new ArrayList<>();
         ArrayList<Photo> tempPhotos = new ArrayList<>();
@@ -80,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,
                 MediaStore.Images.Media.TITLE,
+                MediaStore.Images.Media.RELATIVE_PATH,
+                MediaStore.Images.Media.DATA,
 
         };
         String sortOrder = MediaStore.Images.Media.DATE_ADDED + " ASC";
@@ -94,6 +101,8 @@ public class MainActivity extends AppCompatActivity {
             int idCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
             int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
             int titleCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.TITLE);
+            int pathCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH);
+            int dataCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
 
             while (cursor.moveToNext()) {
                 Uri photoUri = Uri.withAppendedPath(
@@ -101,11 +110,14 @@ public class MainActivity extends AppCompatActivity {
                         cursor.getString(idCol));
 
                 final double[] latLong;
-                String dateTime = null;
+                String strDateTime = null;
                 // Get location data using the Exifinterface library.
                 // Exception occurs if ACCESS_MEDIA_LOCATION permission isn't granted.
                 photoUri = MediaStore.setRequireOriginal(photoUri);
                 InputStream stream = getContentResolver().openInputStream(photoUri);
+
+                Date dateTaken = new Date();
+
                 if (stream != null) {
                     ExifInterface exifInterface = new ExifInterface(stream);
                     double[] returnedLatLong = exifInterface.getLatLong();
@@ -113,9 +125,13 @@ public class MainActivity extends AppCompatActivity {
                     // If lat/long is null, fall back to the coordinates (0, 0).
                     latLong = returnedLatLong != null ? returnedLatLong : new double[2];
 
-                    dateTime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME_DIGITIZED);
-                    if(dateTime == null){
-                        dateTime = "2015:1:1 0:0:0";
+                    strDateTime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME);
+                    if(strDateTime == null){
+                        File file = new File(cursor.getString(dataCol));
+                        dateTaken = new Date(file.lastModified());
+                    }
+                    else{
+                        dateTaken = dateFormater(strDateTime);
                     }
 
                     // Don't reuse the stream associated with
@@ -124,17 +140,16 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     // Failed to load the stream, so return the coordinates (0, 0).
                     latLong = new double[2];
-                    dateTime = "2015:1:1 0:0:0";
+                    strDateTime = "2015:1:1 0:0:0";
                 }
 
                 double latitude = latLong[0];
                 double longitude = latLong[1];
                 String position = convertLatAndLongToGeo(latitude,longitude);
-
                 String name = cursor.getString(nameCol);
-                String title = cursor.getString(titleCol);
-                Date dateTaken = dateFormater(dateTime);
+
                 mPhotos.add(new Photo(name, photoUri, dateTaken, position));
+
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -145,21 +160,13 @@ public class MainActivity extends AppCompatActivity {
         }
         mPhotos.sort((date1,date2)->date2.getDate().compareTo(date1.getDate()));
         mListPhotos = getListOfListPhoto(mPhotos);
+
     }
 
     private void requestStoragePermission() {
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                 && checkSelfPermission(Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Toast.makeText(this, "Permission Accepted", Toast.LENGTH_SHORT).show();
-            initAllPhotos();
-
-            mListPhotosRecyclerView = (RecyclerView) findViewById(R.id.listphotosRecyclerView);
-            mPhotos.sort((date1,date2)->date2.getDate().compareTo(date1.getDate()));
-
-            mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(this, mListPhotos);
-            mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
-            mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
+            loadPhoto();
         } else {
             String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_MEDIA_LOCATION};
             requestPermissions(permissions, STORAGE_PERMISSION_CODE);
@@ -172,22 +179,7 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == STORAGE_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Permission Accepted", Toast.LENGTH_SHORT).show();
-                initAllPhotos();
-                mListPhotos = getListOfListPhoto(mPhotos);
-
-//                mPhotoRecyclerView = (RecyclerView) findViewById(R.id.photoRv);
-//                mPhotos.sort((date1,date2)->date2.getDate().compareTo(date1.getDate()));
-//                mAdapter = new PhotoRecyclerViewAdapter(this, mPhotos);
-//                mPhotoRecyclerView.setAdapter(mAdapter);
-//                mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
-                mListPhotosRecyclerView = (RecyclerView) findViewById(R.id.listphotosRecyclerView);
-
-                mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(this, mListPhotos);
-                mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
-                mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-
+                loadPhoto();
             } else {
                 Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
             }
@@ -250,5 +242,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return  location;
+    }
+    public void loadPhoto(){
+        initAllPhotos();
+        mListPhotosRecyclerView = (RecyclerView) findViewById(R.id.listphotosRecyclerView);
+        mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(this, mListPhotos);
+        mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
+        mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 }
