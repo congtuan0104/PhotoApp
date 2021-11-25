@@ -3,6 +3,8 @@
     <string name="app_name">PhotoApp</string>
     <string name="content">Nội dung</string>
     <string name="title_activity_settings">Cài đặt</string>
+    <string name="title_activity_information">Thông tin</string>
+    <string name="title_activity_teaminfo">Thông tin nhóm</string>
     <string name="title_language">Ngôn ngữ</string>
     <string name="select_language_title">Chọn ngôn ngữ</string>
     <string name="signature_title">Mật khẩu của bạn</string>
@@ -19,4 +21,11 @@
     <string name="PIN_activity_title">Thay đổi mật khẩu (6 số)</string>
     <string name="btn_change_PIN">Đổi mã PIN</string>
     <string name="Note_PIN">Lưu ý: Mật khẩu mặc định là 123456</string>
+
+    <!-- String for Infomation Activity -->
+    <string name="version">Phiên bản</string>
+    <string name="license_terms">Điều khoản</string>
+    <string name="policy">Chính sách</string>
+    <string name="team_info">Thông tin nhóm</string>
+    <string name="feedback">Phản hồi</string>
 </resources>
