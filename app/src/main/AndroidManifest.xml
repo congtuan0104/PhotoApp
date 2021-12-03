@@ -14,14 +14,16 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PhotoApp">
         <activity
+            android:name=".DetailPhotoActivity"
+            android:exported="true" />
+        <activity
             android:name=".InfomationActivity"
             android:exported="true"
-            android:label="@string/title_activity_information"
-            />
+            android:label="@string/title_activity_information" />
         <activity
             android:name=".Passcode"
-            android:label="@string/title_activity_information"
-            android:exported="true" />
+            android:exported="true"
+            android:label="@string/title_activity_information" />
         <activity
             android:name=".SettingsActivity"
             android:exported="true"

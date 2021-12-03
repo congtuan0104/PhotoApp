@@ -28,6 +28,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -250,4 +251,6 @@ public class MainActivity extends AppCompatActivity {
         mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
         mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
+
+
 }
