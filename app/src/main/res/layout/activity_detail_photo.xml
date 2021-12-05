@@ -24,6 +24,7 @@
             android:layout_weight="1"
             />
         <ImageView
+            android:id="@+id/editPhotoBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_edit"
@@ -34,6 +35,7 @@
             android:src="@drawable/ic_favorite"
             android:layout_weight="1"/>
         <ImageView
+            android:id="@+id/deletePhotoBtn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_delete"

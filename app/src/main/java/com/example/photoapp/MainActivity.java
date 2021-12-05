@@ -7,6 +7,7 @@ import androidx.exifinterface.media.ExifInterface;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
 import android.app.SearchManager;
@@ -18,8 +19,10 @@ import android.database.Cursor;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.PrecomputedText;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -45,10 +48,12 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
     private int STORAGE_PERMISSION_CODE = 1;
     ArrayList<Photo> mPhotos = new ArrayList<>();
-    ArrayList<ListPhotos> mListPhotos =  new ArrayList<>();
+    ArrayList<ListPhotos> mListPhotos = new ArrayList<>();
     RecyclerView mListPhotosRecyclerView;
     SearchView searchView;
     ListPhotosRecyclerViewAdapter mListPhotosAdapter;
+    SwipeRefreshLayout swipeRefreshLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,32 +61,47 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         requestStoragePermission();
+        mListPhotosRecyclerView = (RecyclerView) findViewById(R.id.listphotosRecyclerView);
+        mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(this, mListPhotos);
+        mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
+        mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
+        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
+                loadPhotoTask.execute();
+            }
+        });
     }
-    public ArrayList<ListPhotos> getListOfListPhoto(ArrayList<Photo> photos){
-        if(photos.size() == 0){
+
+    public ArrayList<ListPhotos> getListOfListPhoto(ArrayList<Photo> photos) {
+        if (photos.size() == 0) {
             return new ArrayList<ListPhotos>();
         }
         String currentDate = photos.get(0).getStringDate();
-        ArrayList<ListPhotos> listPhotos =  new ArrayList<>();
+        ArrayList<ListPhotos> listPhotos = new ArrayList<>();
         ArrayList<Photo> tempPhotos = new ArrayList<>();
-        for(int i =0 ;i<photos.size();i++){
-            if(photos.get(i).getStringDate().equals(currentDate) ){
+        for (int i = 0; i < photos.size(); i++) {
+            if (photos.get(i).getStringDate().equals(currentDate)) {
                 tempPhotos.add(photos.get(i));
-            }
-            else{
+            } else {
                 listPhotos.add(new ListPhotos(currentDate, (ArrayList<Photo>) tempPhotos.clone()));
                 currentDate = photos.get(i).getStringDate();
                 tempPhotos.clear();
                 tempPhotos.add(photos.get(i));
             }
-            if(i == photos.size()-1){
+            if (i == photos.size() - 1) {
                 listPhotos.add(new ListPhotos(currentDate, (ArrayList<Photo>) tempPhotos.clone()));
             }
         }
         return listPhotos;
     }
+
     private void initAllPhotos() {
+        mPhotos = new ArrayList<>();
+        mListPhotos = new ArrayList<>();
         String[] projection = new String[]{
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,
@@ -127,11 +147,10 @@ public class MainActivity extends AppCompatActivity {
                     latLong = returnedLatLong != null ? returnedLatLong : new double[2];
 
                     strDateTime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME);
-                    if(strDateTime == null){
+                    if (strDateTime == null) {
                         File file = new File(cursor.getString(dataCol));
                         dateTaken = new Date(file.lastModified());
-                    }
-                    else{
+                    } else {
                         dateTaken = dateFormater(strDateTime);
                     }
 
@@ -146,10 +165,10 @@ public class MainActivity extends AppCompatActivity {
 
                 double latitude = latLong[0];
                 double longitude = latLong[1];
-                String position = convertLatAndLongToGeo(latitude,longitude);
+                String position = convertLatAndLongToGeo(latitude, longitude);
                 String name = cursor.getString(nameCol);
-
-                mPhotos.add(new Photo(name, photoUri, dateTaken, position));
+                String realPath = cursor.getString(dataCol);
+                mPhotos.add(new Photo(name,realPath, photoUri, dateTaken, position));
 
             }
         } catch (ParseException e) {
@@ -159,15 +178,15 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        mPhotos.sort((date1,date2)->date2.getDate().compareTo(date1.getDate()));
+        mPhotos.sort((date1, date2) -> date2.getDate().compareTo(date1.getDate()));
         mListPhotos = getListOfListPhoto(mPhotos);
-
     }
 
     private void requestStoragePermission() {
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                 && checkSelfPermission(Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            loadPhoto();
+            LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
+            loadPhotoTask.execute();
         } else {
             String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_MEDIA_LOCATION};
             requestPermissions(permissions, STORAGE_PERMISSION_CODE);
@@ -180,7 +199,8 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == STORAGE_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
                     && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
-                loadPhoto();
+                LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
+                loadPhotoTask.execute();
             } else {
                 Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
             }
@@ -231,26 +251,44 @@ public class MainActivity extends AppCompatActivity {
         String states = "";
         String location = "";
         try {
-            addresses = geocoder.getFromLocation(latitude,longitude,1);
-            if(addresses.size()>=1) {
+            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+            if (addresses.size() >= 1) {
                 states = addresses.get(0).getAdminArea();
                 city = addresses.get(0).getLocality();
-                location = city +", "+ states;
+                location = city + ", " + states;
             }
             //address = addresses.get(0).getAddressLine(0);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return  location;
-    }
-    public void loadPhoto(){
-        initAllPhotos();
-        mListPhotosRecyclerView = (RecyclerView) findViewById(R.id.listphotosRecyclerView);
-        mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(this, mListPhotos);
-        mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
-        mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        return location;
     }
 
 
+    private class LoadPhotoTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            initAllPhotos();
+            return null;
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected void onPostExecute(Void unused) {
+            super.onPostExecute(unused);
+            mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(MainActivity.this, mListPhotos);
+            mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
+            swipeRefreshLayout.setRefreshing(false);
+        }
+    }
 }

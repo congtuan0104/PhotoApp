@@ -10,21 +10,26 @@ import java.util.Date;
 
 public class Photo implements Parcelable {
     private String imgName;
+    private String realPath;
     private Uri imgUri;
     private Date date;
     private String geoLocation;
 
-    public Photo(String imgName, Uri imgUri, Date date, String geoLocation) {
+
+
+    public Photo(String imgName, String realPath, Uri imgUri, Date date, String geoLocation) {
         this.imgName = imgName;
         this.imgUri = imgUri;
         this.date = date;
         this.geoLocation = geoLocation;
+        this.realPath = realPath;
     }
 
     protected Photo(Parcel in) {
         imgName = in.readString();
         imgUri = in.readParcelable(Uri.class.getClassLoader());
         geoLocation = in.readString();
+        realPath = in.readString();
     }
 
     public static final Creator<Photo> CREATOR = new Creator<Photo>() {
@@ -77,7 +82,13 @@ public class Photo implements Parcelable {
         return strDate;
     }
 
+    public String getRealPath() {
+        return realPath;
+    }
 
+    public void setRealPath(String realPath) {
+        this.realPath = realPath;
+    }
     @Override
     public int describeContents() {
         return 0;
@@ -88,5 +99,6 @@ public class Photo implements Parcelable {
         dest.writeString(imgName);
         dest.writeParcelable(imgUri, flags);
         dest.writeString(geoLocation);
+        dest.writeString(realPath);
     }
 }
