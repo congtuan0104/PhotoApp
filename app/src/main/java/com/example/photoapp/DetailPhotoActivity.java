@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -15,12 +16,15 @@ import com.dsphotoeditor.sdk.activity.DsPhotoEditorActivity;
 import com.dsphotoeditor.sdk.utils.DsPhotoEditorConstants;
 
 import java.io.File;
+import android.widget.PopupMenu;
 
 public class DetailPhotoActivity extends AppCompatActivity {
     private Photo mPhoto;
     private ImageView bigImg;
     private ImageView editPhotoBtn;
     private ImageView deletePhotoBtn;
+
+    ImageView detailMoreBtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,6 +66,13 @@ public class DetailPhotoActivity extends AppCompatActivity {
 
             }
         });
+        detailMoreBtn = findViewById(R.id.detailMore);
+        detailMoreBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ShowDetailMore();
+            }
+        });
 
     }
     @Override
@@ -75,5 +86,12 @@ public class DetailPhotoActivity extends AppCompatActivity {
                     break;
             }
         }
+
+    }
+
+    private void ShowDetailMore(){
+        PopupMenu detailMenu = new PopupMenu(this, detailMoreBtn);
+        detailMenu.getMenuInflater().inflate(R.menu.detail_more, detailMenu.getMenu());
+        detailMenu.show();
     }
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:title="Thêm vào album"
+        android:id="@+id/detailAdd"/>
+    <item android:title="Đặt làm hình nền"
+        android:id="@+id/detailSetWallpaper"/>
+    <item android:title="Bắt đầu trình chiếu"
+        android:id="@+id/detailSlideShow"/>
+    <item android:title="Đổi tên"
+        android:id="@+id/detailRename"/>
+    <item android:title="Chi tiết"
+        android:id="@+id/detailDetail"/>
+    <item android:title="Sao chép"
+        android:id="@+id/detailCopy"/>
+
+
+</menu>
