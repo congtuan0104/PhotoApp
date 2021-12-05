@@ -20,6 +20,6 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/settings"
         android:layout_centerHorizontal="true"
-        android:text="Đổi mã PIN" />
+        android:text="@string/btn_change_PIN" />
 
 </RelativeLayout>

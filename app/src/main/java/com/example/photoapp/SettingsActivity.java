@@ -1,5 +1,6 @@
 package com.example.photoapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -28,7 +29,8 @@ public class SettingsActivity extends AppCompatActivity {
         btnPin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                Intent intentPIN=new Intent(getApplicationContext(),Passcode.class);
+                startActivity(intentPIN);
             }
         });
     }
