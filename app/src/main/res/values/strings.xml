@@ -8,7 +8,9 @@
     <string name="title_activity_information">Information</string>
     <string name="title_activity_teaminfo">Team Information</string>
     <string name="title_language">Language</string>
-    <string name="signature_title">Your password</string>
+    <string name="security">Security key</string>
+    <string name="passkey_summary_off">Security key is turned off</string>
+    <string name="passkey_summary_on">Security key is turned on</string>
     <string name="select_language_title">Select display language</string>
     <string name="darkmode_title">Dark mode</string>
     <string name="darkmode_summary_on">Dark Mode is turned on</string>
@@ -35,4 +37,5 @@
     <string name="feedback">Feedback</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
 </resources>

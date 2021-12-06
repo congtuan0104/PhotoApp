@@ -14,6 +14,7 @@ import android.app.SearchManager;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Address;
@@ -61,6 +62,20 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         requestStoragePermission();
+
+        SharedPreferences prefs = getSharedPreferences("my_pin_pref", MODE_PRIVATE);
+        if(!prefs.contains("pin")){
+            SharedPreferences.Editor editor = getSharedPreferences("my_pin_pref", MODE_PRIVATE).edit();
+            editor.putString("pin", "123456");
+            editor.commit();
+
+        }
+        else{
+            Intent passIntent = new Intent(getApplicationContext(), PassAuthentication.class);
+            startActivity(passIntent);
+        }
+
+
         mListPhotosRecyclerView = (RecyclerView) findViewById(R.id.listphotosRecyclerView);
         mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(this, mListPhotos);
         mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);

@@ -25,12 +25,11 @@
 
     <PreferenceCategory app:title="@string/security_title">
 
-        <EditTextPreference
-            app:key="pass"
-            app:title="@string/signature_title"
-            app:useSimpleSummaryProvider="true" />
-
-
+        <SwitchPreferenceCompat
+            app:key="securityKey"
+            app:title="@string/security"
+            app:summaryOff="@string/passkey_summary_off"
+            app:summaryOn="@string/passkey_summary_on"/>
 
     </PreferenceCategory>
 

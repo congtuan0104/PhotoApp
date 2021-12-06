@@ -20,12 +20,12 @@ public class Passcode extends AppCompatActivity {
         edtNewPIN=(EditText) findViewById(R.id.edtNewPIN);
 
         //Tạo PIN mặc định là 123456
-        SharedPreferences.Editor editor = getSharedPreferences("my_pin_pref", MODE_PRIVATE).edit();
+//        SharedPreferences.Editor editor = getSharedPreferences("my_pin_pref", MODE_PRIVATE).edit();
         SharedPreferences prefs = getSharedPreferences("my_pin_pref", MODE_PRIVATE);
-        if(!prefs.contains("pin")){
-            editor.putString("pin", "123456");
-            editor.commit();
-        }
+//        if(!prefs.contains("pin")){
+//            editor.putString("pin", "123456");
+//            editor.commit();
+//        }
 
 
 

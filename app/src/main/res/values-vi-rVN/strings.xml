@@ -7,7 +7,6 @@
     <string name="title_activity_teaminfo">Thông tin nhóm</string>
     <string name="title_language">Ngôn ngữ</string>
     <string name="select_language_title">Chọn ngôn ngữ</string>
-    <string name="signature_title">Mật khẩu của bạn</string>
     <string name="display_title">Hiển thị</string>
     <string name="darkmode_summary_on">"Chế độ tối màu "</string>
     <string name="darkmode_summary_off">Chế độ tối màu đang tắt</string>
@@ -28,4 +27,8 @@
     <string name="policy">Chính sách</string>
     <string name="team_info">Thông tin nhóm</string>
     <string name="feedback">Phản hồi</string>
+    <string name="security">Khoá bảo mật</string>
+    <string name="passkey_summary_off">Khoá bảo mật đang tắt</string>
+    <string name="passkey_summary_on">Khoá bảo mật đang bật</string>
+    <string name="hello_blank_fragment">Fragment trống</string>
 </resources>
