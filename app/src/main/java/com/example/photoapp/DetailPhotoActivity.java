@@ -3,38 +3,35 @@ package com.example.photoapp;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.Activity;
-import android.app.PendingIntent;
-import android.content.ContentResolver;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
+<<<<<<<<< Temporary merge branch 1
 import android.view.View;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
+=========
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.dsphotoeditor.sdk.activity.DsPhotoEditorActivity;
 import com.dsphotoeditor.sdk.utils.DsPhotoEditorConstants;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-import android.widget.PopupMenu;
+>>>>>>>>> Temporary merge branch 2
 
 public class DetailPhotoActivity extends AppCompatActivity {
-    private static final int DELETE_REQUEST_CODE = 12;
     private Photo mPhoto;
     private ImageView bigImg;
-    private ImageView editPhotoBtn;
-    private ImageView deletePhotoBtn;
+<<<<<<<<< Temporary merge branch 1
 
     ImageView detailMoreBtn;
+=========
+    private ImageView editPhotoBtn;
+    private ImageView deletePhotoBtn;
+>>>>>>>>> Temporary merge branch 2
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,10 +43,7 @@ public class DetailPhotoActivity extends AppCompatActivity {
         }
         mPhoto = (Photo) bundle.getParcelable("object_photo");
         bigImg = (ImageView)findViewById(R.id.bigImg);
-        Glide.with(this)
-                .load(mPhoto.getImgUri())
-                .centerCrop()
-                .into(bigImg);
+        bigImg.setImageURI(mPhoto.getImgUri());
         editPhotoBtn = (ImageView)findViewById(R.id.editPhotoBtn);
 
         editPhotoBtn.setOnClickListener(new View.OnClickListener() {
@@ -67,28 +61,17 @@ public class DetailPhotoActivity extends AppCompatActivity {
             public void onClick(View v) {
                 File photoFile = new File(mPhoto.getRealPath());
                 if (photoFile.exists()) {
+                    Log.e("TAG", mPhoto.getRealPath());
                     if (photoFile.delete()) {
                         Toast.makeText(DetailPhotoActivity.this, "Deleted", Toast.LENGTH_SHORT).show();
                         finish();
+
                     } else {
-                        ContentResolver contentResolver = DetailPhotoActivity.this.getContentResolver();
-                        ArrayList<Uri> uriList = new ArrayList<>();
-                        uriList.add(mPhoto.getImgUri());
-
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                            PendingIntent editPendingIntent = MediaStore.createDeleteRequest(contentResolver, uriList);
-                            try {
-                                startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
-                            } catch (IntentSender.SendIntentException e) {
-                                e.printStackTrace();
-                            }
-
-                        }
+                        Toast.makeText(DetailPhotoActivity.this, "Can't Deleted", Toast.LENGTH_SHORT).show();
                     }
-
                 }
-            }
-        });
+
+<<<<<<<<< Temporary merge branch 1
         detailMoreBtn = findViewById(R.id.detailMore);
         detailMoreBtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,6 +79,16 @@ public class DetailPhotoActivity extends AppCompatActivity {
                 ShowDetailMore();
             }
         });
+    }
+
+    private void ShowDetailMore(){
+        PopupMenu detailMenu = new PopupMenu(this, detailMoreBtn);
+        detailMenu.getMenuInflater().inflate(R.menu.detail_more, detailMenu.getMenu());
+        detailMenu.show();
+=========
+            }
+        });
+
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -108,19 +101,6 @@ public class DetailPhotoActivity extends AppCompatActivity {
                     break;
             }
         }
-        if (requestCode == DELETE_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                finish();;
-            } else {
-                Toast.makeText(this, "Can't Delete", Toast.LENGTH_SHORT).show();
-            }
-        }
-
-    }
-
-    private void ShowDetailMore(){
-        PopupMenu detailMenu = new PopupMenu(this, detailMoreBtn);
-        detailMenu.getMenuInflater().inflate(R.menu.detail_more, detailMenu.getMenu());
-        detailMenu.show();
+>>>>>>>>> Temporary merge branch 2
     }
 }
