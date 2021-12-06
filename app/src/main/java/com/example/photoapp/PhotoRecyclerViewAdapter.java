@@ -3,7 +3,9 @@ package com.example.photoapp;
 import static android.content.ContentValues.TAG;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -42,6 +45,21 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
                 .load(imgUri)
                 .centerCrop()
                 .into(holder.img);
+        holder.img.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickGoToDetailImg(photos.get(position));
+            }
+        });
+    }
+
+    private void onClickGoToDetailImg(Photo photo) {
+        Intent detailIntent = new Intent(context,DetailPhotoActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putParcelable( "object_photo",photo);
+        detailIntent.putExtras(bundle);
+        context.startActivity(detailIntent);
+
     }
 
     @Override
