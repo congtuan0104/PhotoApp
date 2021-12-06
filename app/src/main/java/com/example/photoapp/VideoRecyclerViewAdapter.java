@@ -39,10 +39,10 @@ public class VideoRecyclerViewAdapter extends RecyclerView.Adapter<VideoRecycler
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         String name = videos.get(position).getVidName();
         String vidPath = videos.get(position).getVidPath();
-        Glide.with(context)
-                .load(vidPath)
-                .centerCrop()
-                .into(holder.vid);
+//        Glide.with(context)
+//                .load(vidPath)
+//                .centerCrop()
+//                .into(holder.vid);
     }
 
     @Override

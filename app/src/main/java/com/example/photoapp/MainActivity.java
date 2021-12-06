@@ -3,6 +3,7 @@ package com.example.photoapp;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
+import androidx.core.content.FileProvider;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -16,11 +17,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.PrecomputedText;
 import android.util.Log;
@@ -31,6 +34,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+
+import com.dsphotoeditor.sdk.activity.DsPhotoEditorActivity;
+import com.dsphotoeditor.sdk.utils.DsPhotoEditorConstants;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -46,6 +53,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
+    private static final int CAMERA_REQUEST =12;
     private int STORAGE_PERMISSION_CODE = 1;
     ArrayList<Photo> mPhotos = new ArrayList<>();
     ArrayList<ListPhotos> mListPhotos = new ArrayList<>();
@@ -53,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     SearchView searchView;
     ListPhotosRecyclerViewAdapter mListPhotosAdapter;
     SwipeRefreshLayout swipeRefreshLayout;
-
+    FloatingActionButton fabCamera;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,8 +82,60 @@ public class MainActivity extends AppCompatActivity {
                 loadPhotoTask.execute();
             }
         });
+        fabCamera = (FloatingActionButton)findViewById(R.id.fabCamera);
+        fabCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    capturePhoto();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
+    String currentCameraPhotoPath;
+    private File createImageFile() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,
+                ".jpg",
+                storageDir
+        );
 
+        // Save a file: path for use with ACTION_VIEW intents
+        currentCameraPhotoPath = image.getAbsolutePath();
+        return image;
+    }
+    private void capturePhoto() throws IOException {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            File photoFile = null;
+            photoFile = createImageFile();
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(this,
+                        "com.example.android.fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, CAMERA_REQUEST);
+
+            }
+        }
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
+            try {
+                MediaStore.Images.Media.insertImage(this.getContentResolver(), currentCameraPhotoPath,
+                        "Title", null);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
     public ArrayList<ListPhotos> getListOfListPhoto(ArrayList<Photo> photos) {
         if (photos.size() == 0) {
             return new ArrayList<ListPhotos>();
@@ -108,7 +168,6 @@ public class MainActivity extends AppCompatActivity {
                 MediaStore.Images.Media.TITLE,
                 MediaStore.Images.Media.RELATIVE_PATH,
                 MediaStore.Images.Media.DATA,
-
         };
         String sortOrder = MediaStore.Images.Media.DATE_ADDED + " ASC";
         try (Cursor cursor = getApplicationContext().getContentResolver().query(
@@ -184,11 +243,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestStoragePermission() {
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
+                && checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
                 && checkSelfPermission(Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
             loadPhotoTask.execute();
         } else {
-            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.ACCESS_MEDIA_LOCATION};
+            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.ACCESS_MEDIA_LOCATION};
             requestPermissions(permissions, STORAGE_PERMISSION_CODE);
         }
     }
@@ -198,7 +258,8 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == STORAGE_PERMISSION_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED) {
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
                 LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
                 loadPhotoTask.execute();
             } else {
