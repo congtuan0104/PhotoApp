@@ -3,22 +3,32 @@ package com.example.photoapp;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.dsphotoeditor.sdk.activity.DsPhotoEditorActivity;
 import com.dsphotoeditor.sdk.utils.DsPhotoEditorConstants;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 import android.widget.PopupMenu;
 
 public class DetailPhotoActivity extends AppCompatActivity {
+    private static final int DELETE_REQUEST_CODE = 12;
     private Photo mPhoto;
     private ImageView bigImg;
     private ImageView editPhotoBtn;
@@ -36,7 +46,10 @@ public class DetailPhotoActivity extends AppCompatActivity {
         }
         mPhoto = (Photo) bundle.getParcelable("object_photo");
         bigImg = (ImageView)findViewById(R.id.bigImg);
-        bigImg.setImageURI(mPhoto.getImgUri());
+        Glide.with(this)
+                .load(mPhoto.getImgUri())
+                .centerCrop()
+                .into(bigImg);
         editPhotoBtn = (ImageView)findViewById(R.id.editPhotoBtn);
 
         editPhotoBtn.setOnClickListener(new View.OnClickListener() {
@@ -54,16 +67,26 @@ public class DetailPhotoActivity extends AppCompatActivity {
             public void onClick(View v) {
                 File photoFile = new File(mPhoto.getRealPath());
                 if (photoFile.exists()) {
-                    Log.e("TAG", mPhoto.getRealPath());
                     if (photoFile.delete()) {
                         Toast.makeText(DetailPhotoActivity.this, "Deleted", Toast.LENGTH_SHORT).show();
                         finish();
-
                     } else {
-                        Toast.makeText(DetailPhotoActivity.this, "Can't Deleted", Toast.LENGTH_SHORT).show();
-                    }
-                }
+                        ContentResolver contentResolver = DetailPhotoActivity.this.getContentResolver();
+                        ArrayList<Uri> uriList = new ArrayList<>();
+                        uriList.add(mPhoto.getImgUri());
 
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                            PendingIntent editPendingIntent = MediaStore.createDeleteRequest(contentResolver, uriList);
+                            try {
+                                startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
+                            } catch (IntentSender.SendIntentException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
+                    }
+
+                }
             }
         });
         detailMoreBtn = findViewById(R.id.detailMore);
@@ -73,7 +96,6 @@ public class DetailPhotoActivity extends AppCompatActivity {
                 ShowDetailMore();
             }
         });
-
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -84,6 +106,13 @@ public class DetailPhotoActivity extends AppCompatActivity {
                     Uri outputUri = data.getData();
                     bigImg.setImageURI(outputUri);
                     break;
+            }
+        }
+        if (requestCode == DELETE_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                finish();;
+            } else {
+                Toast.makeText(this, "Can't Delete", Toast.LENGTH_SHORT).show();
             }
         }
 

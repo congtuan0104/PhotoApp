@@ -2,14 +2,17 @@ package com.example.photoapp;
 
 import static android.content.ContentValues.TAG;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -38,6 +41,7 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
         return new MyViewHolder(view);
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Uri imgUri = photos.get(position).getImgUri();
@@ -45,6 +49,17 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
                 .load(imgUri)
                 .centerCrop()
                 .into(holder.img);
+
+        holder.img.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(event.getAction() ==MotionEvent.ACTION_DOWN){
+                    holder.img.startAnimation(AnimationUtils.loadAnimation(context, R.anim.anim_item));
+                }
+                return false;
+            }
+
+        });
         holder.img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -59,7 +74,6 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
         bundle.putParcelable( "object_photo",photo);
         detailIntent.putExtras(bundle);
         context.startActivity(detailIntent);
-
     }
 
     @Override
