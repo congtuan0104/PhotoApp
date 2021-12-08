@@ -3,10 +3,12 @@ package com.example.photoapp;
 public class Video {
     private String vidName;
     private String vidPath;
+    private String vidThumb;
 
-    public Video(String vidPath,String vidName) {
+    public Video(String vidName, String vidPath, String vidThumb) {
+        this.vidName = vidName;
         this.vidPath = vidPath;
-        this.vidName  = vidName;
+        this.vidThumb = vidThumb;
     }
 
     public String getVidName() {
@@ -23,5 +25,13 @@ public class Video {
 
     public void setVidPath(String vidPath) {
         this.vidPath = vidPath;
+    }
+
+    public String getVidThumb() {
+        return vidThumb;
+    }
+
+    public void setVidThumb(String vidThumb) {
+        this.vidThumb = vidThumb;
     }
 }

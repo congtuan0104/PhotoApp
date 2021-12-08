@@ -3,6 +3,7 @@ package com.example.photoapp;
 import static android.content.ContentValues.TAG;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,14 +20,17 @@ import com.bumptech.glide.Glide;
 import java.util.ArrayList;
 public class VideoRecyclerViewAdapter extends RecyclerView.Adapter<VideoRecyclerViewAdapter.MyViewHolder> {
 
-    ArrayList<Video> videos;
-    Context context;
+    private ArrayList<Video> mVideos;
+    private Context mContext;
 
-    public VideoRecyclerViewAdapter(Context context, ArrayList<Video> videos) {
-        this.context = context;
-        this.videos = videos;
+    public VideoRecyclerViewAdapter(Context mContext, ArrayList<Video> mVideos) {
+        this.mContext = mContext;
+        this.mVideos = mVideos;
     }
-
+    public void setData(ArrayList<Video> mVideos){
+        this.mVideos = mVideos;
+        notifyDataSetChanged();
+    }
     @NonNull
     @Override
     public VideoRecyclerViewAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -37,27 +41,36 @@ public class VideoRecyclerViewAdapter extends RecyclerView.Adapter<VideoRecycler
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        String name = videos.get(position).getVidName();
-        String vidPath = videos.get(position).getVidPath();
-//        Glide.with(context)
-//                .load(vidPath)
-//                .centerCrop()
-//                .into(holder.vid);
+        String vidName = mVideos.get(position).getVidName();
+        String vidPath = mVideos.get(position).getVidPath();
+        String vidThumb = mVideos.get(position).getVidThumb();
+        Glide.with(mContext)
+                .load(vidThumb)
+                .centerCrop()
+                .into(holder.vidThumb);
+        holder.playVideoBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(mContext,PlayVideoActivity.class);
+                intent.putExtra("video_path",vidPath);
+                mContext.startActivity(intent);
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return videos.size();
+        return mVideos.size();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder {
-        private TextView videoTextView;
-        private VideoView vid;
+        private ImageView vidThumb;
+        private ImageView playVideoBtn;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
-            videoTextView = (TextView) itemView.findViewById(R.id.videoTextView);
-            vid = (VideoView) itemView.findViewById(R.id.video);
+            vidThumb = (ImageView) itemView.findViewById(R.id.imgVideo);
+            playVideoBtn = (ImageView) itemView.findViewById(R.id.playVideoBtn);
         }
     }
 }

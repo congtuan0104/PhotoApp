@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
 import android.app.SearchManager;
@@ -39,6 +40,8 @@ import android.widget.Toast;
 import com.dsphotoeditor.sdk.activity.DsPhotoEditorActivity;
 import com.dsphotoeditor.sdk.utils.DsPhotoEditorConstants;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -56,47 +59,45 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity {
     private static final int CAMERA_REQUEST =12;
     private int STORAGE_PERMISSION_CODE = 1;
-    ArrayList<Photo> mPhotos = new ArrayList<>();
-    ArrayList<ListPhotos> mListPhotos = new ArrayList<>();
-    RecyclerView mListPhotosRecyclerView;
-    SearchView searchView;
-    ListPhotosRecyclerViewAdapter mListPhotosAdapter;
-    SwipeRefreshLayout swipeRefreshLayout;
+    private TabLayout mTablayout;
+    private ViewPager2 mViewPager;
+    private MyViewPagerAdapter myViewPagerAdapter;
     FloatingActionButton fabCamera;
+
+    SearchView searchView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        requestStoragePermission();
-
         SharedPreferences prefs = getSharedPreferences("my_pin_pref", MODE_PRIVATE);
-        if(!prefs.contains("pin")){
-            SharedPreferences.Editor editor = getSharedPreferences("my_pin_pref", MODE_PRIVATE).edit();
-            editor.putString("pin", "123456");
-            editor.commit();
-
-        }
-        else{
+        if(prefs.contains("pin")){
             Intent passIntent = new Intent(getApplicationContext(), PassAuthentication.class);
             startActivity(passIntent);
+
         }
 
+        mTablayout = (TabLayout) findViewById(R.id.tab_layout);
+        mViewPager = (ViewPager2) findViewById(R.id.view_pager);
+        myViewPagerAdapter = new MyViewPagerAdapter(this);
+        mViewPager.setAdapter(myViewPagerAdapter);
 
-        mListPhotosRecyclerView = (RecyclerView) findViewById(R.id.listphotosRecyclerView);
-        mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(this, mListPhotos);
-        mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
-        mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        swipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipeRefreshLayout);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        new TabLayoutMediator(mTablayout, mViewPager, new TabLayoutMediator.TabConfigurationStrategy() {
             @Override
-            public void onRefresh() {
-                LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
-                loadPhotoTask.execute();
+            public void onConfigureTab(@NonNull TabLayout.Tab tab, int position) {
+                switch (position) {
+                    case 0: {
+                        tab.setText("Photo");
+                        break;
+                    }
+                    case 1: {
+                        tab.setText("Video");
+                        break;
+                    }
+                }
             }
-        });
+        }).attach();
         fabCamera = (FloatingActionButton)findViewById(R.id.fabCamera);
         fabCamera.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
     }
     String currentCameraPhotoPath;
     private File createImageFile() throws IOException {
@@ -134,8 +136,8 @@ public class MainActivity extends AppCompatActivity {
                         "com.example.android.fileprovider",
                         photoFile);
                 takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                takePictureIntent.putExtra("PhotoPath",currentCameraPhotoPath);
                 startActivityForResult(takePictureIntent, CAMERA_REQUEST);
-
             }
         }
     }
@@ -151,137 +153,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    public ArrayList<ListPhotos> getListOfListPhoto(ArrayList<Photo> photos) {
-        if (photos.size() == 0) {
-            return new ArrayList<ListPhotos>();
-        }
-        String currentDate = photos.get(0).getStringDate();
-        ArrayList<ListPhotos> listPhotos = new ArrayList<>();
-        ArrayList<Photo> tempPhotos = new ArrayList<>();
-        for (int i = 0; i < photos.size(); i++) {
-            if (photos.get(i).getStringDate().equals(currentDate)) {
-                tempPhotos.add(photos.get(i));
-            } else {
-                listPhotos.add(new ListPhotos(currentDate, (ArrayList<Photo>) tempPhotos.clone()));
-                currentDate = photos.get(i).getStringDate();
-                tempPhotos.clear();
-                tempPhotos.add(photos.get(i));
-            }
-            if (i == photos.size() - 1) {
-                listPhotos.add(new ListPhotos(currentDate, (ArrayList<Photo>) tempPhotos.clone()));
-            }
-        }
-        return listPhotos;
-    }
 
-    private void initAllPhotos() {
-        mPhotos = new ArrayList<>();
-        mListPhotos = new ArrayList<>();
-        String[] projection = new String[]{
-                MediaStore.Images.Media._ID,
-                MediaStore.Images.Media.DISPLAY_NAME,
-                MediaStore.Images.Media.TITLE,
-                MediaStore.Images.Media.RELATIVE_PATH,
-                MediaStore.Images.Media.DATA,
-        };
-        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " ASC";
-        try (Cursor cursor = getApplicationContext().getContentResolver().query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                projection,
-                null,
-                null,
-                null
-        )) {
-            // Cache column indices.
-            int idCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID);
-            int nameCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DISPLAY_NAME);
-            int titleCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.TITLE);
-            int pathCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.RELATIVE_PATH);
-            int dataCol = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
-
-            while (cursor.moveToNext()) {
-                Uri photoUri = Uri.withAppendedPath(
-                        MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        cursor.getString(idCol));
-
-                final double[] latLong;
-                String strDateTime = null;
-                // Get location data using the Exifinterface library.
-                // Exception occurs if ACCESS_MEDIA_LOCATION permission isn't granted.
-                photoUri = MediaStore.setRequireOriginal(photoUri);
-                InputStream stream = getContentResolver().openInputStream(photoUri);
-
-                Date dateTaken = new Date();
-
-                if (stream != null) {
-                    ExifInterface exifInterface = new ExifInterface(stream);
-                    double[] returnedLatLong = exifInterface.getLatLong();
-
-                    // If lat/long is null, fall back to the coordinates (0, 0).
-                    latLong = returnedLatLong != null ? returnedLatLong : new double[2];
-
-                    strDateTime = exifInterface.getAttribute(ExifInterface.TAG_DATETIME);
-                    if (strDateTime == null) {
-                        File file = new File(cursor.getString(dataCol));
-                        dateTaken = new Date(file.lastModified());
-                    } else {
-                        dateTaken = dateFormater(strDateTime);
-                    }
-
-                    // Don't reuse the stream associated with
-                    // the instance of "ExifInterface".
-                    stream.close();
-                } else {
-                    // Failed to load the stream, so return the coordinates (0, 0).
-                    latLong = new double[2];
-                    strDateTime = "2015:1:1 0:0:0";
-                }
-
-                double latitude = latLong[0];
-                double longitude = latLong[1];
-                String position = convertLatAndLongToGeo(latitude, longitude);
-                String name = cursor.getString(nameCol);
-                String realPath = cursor.getString(dataCol);
-                mPhotos.add(new Photo(name,realPath, photoUri, dateTaken, position));
-
-            }
-        } catch (ParseException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mPhotos.sort((date1, date2) -> date2.getDate().compareTo(date1.getDate()));
-        mListPhotos = getListOfListPhoto(mPhotos);
-    }
-
-    private void requestStoragePermission() {
-        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-                && checkSelfPermission(Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
-            loadPhotoTask.execute();
-        } else {
-            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.ACCESS_MEDIA_LOCATION};
-            requestPermissions(permissions, STORAGE_PERMISSION_CODE);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
-                loadPhotoTask.execute();
-            } else {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -313,58 +185,5 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public Date dateFormater(String strDate) throws ParseException {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
-        Date date = formatter.parse(strDate);
-        return date;
-    }
 
-    public String convertLatAndLongToGeo(double latitude, double longitude) {
-        Geocoder geocoder;
-        List<Address> addresses;
-        geocoder = new Geocoder(this, Locale.getDefault());
-        String city = "";
-        String states = "";
-        String location = "";
-        try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            if (addresses.size() >= 1) {
-                states = addresses.get(0).getAdminArea();
-                city = addresses.get(0).getLocality();
-                location = city + ", " + states;
-            }
-            //address = addresses.get(0).getAddressLine(0);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return location;
-    }
-
-
-    private class LoadPhotoTask extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            initAllPhotos();
-            return null;
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onPostExecute(Void unused) {
-            super.onPostExecute(unused);
-            mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(MainActivity.this, mListPhotos);
-            mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
-            swipeRefreshLayout.setRefreshing(false);
-        }
-    }
 }

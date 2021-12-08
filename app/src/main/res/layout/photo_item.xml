@@ -6,7 +6,7 @@
         android:id="@+id/photo"
         android:layout_width="match_parent"
         android:layout_height="300px"
-        android:layout_margin="5dp"
+        android:layout_margin="3dp"
         android:background="@drawable/ripple_effect"
         />
 </RelativeLayout>

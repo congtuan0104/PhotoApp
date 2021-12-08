@@ -48,7 +48,6 @@ public class DetailPhotoActivity extends AppCompatActivity {
         bigImg = (ImageView)findViewById(R.id.bigImg);
         Glide.with(this)
                 .load(mPhoto.getImgUri())
-                .centerCrop()
                 .into(bigImg);
         editPhotoBtn = (ImageView)findViewById(R.id.editPhotoBtn);
 

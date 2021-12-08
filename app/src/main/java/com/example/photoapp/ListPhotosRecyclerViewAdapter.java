@@ -22,7 +22,10 @@ public class ListPhotosRecyclerViewAdapter extends RecyclerView.Adapter<ListPhot
         this.mContext = mContext;
         this.mListPhotos = mListPhotos;
     }
-
+    public void setData(ArrayList<ListPhotos> mListPhotos){
+        this.mListPhotos = mListPhotos;
+        notifyDataSetChanged();
+    }
     @NonNull
     @Override
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
