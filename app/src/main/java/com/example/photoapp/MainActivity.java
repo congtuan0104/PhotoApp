@@ -72,17 +72,11 @@ public class MainActivity extends AppCompatActivity {
         requestStoragePermission();
 
         SharedPreferences prefs = getSharedPreferences("my_pin_pref", MODE_PRIVATE);
-        if(!prefs.contains("pin")){
-            SharedPreferences.Editor editor = getSharedPreferences("my_pin_pref", MODE_PRIVATE).edit();
-            editor.putString("pin", "123456");
-            editor.commit();
-
-        }
-        else{
+        if(prefs.contains("pin")){
             Intent passIntent = new Intent(getApplicationContext(), PassAuthentication.class);
             startActivity(passIntent);
-        }
 
+        }
 
         mListPhotosRecyclerView = (RecyclerView) findViewById(R.id.listphotosRecyclerView);
         mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(this, mListPhotos);
