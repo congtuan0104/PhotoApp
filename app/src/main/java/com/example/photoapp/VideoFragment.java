@@ -46,6 +46,7 @@ public class VideoFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mListVideoRecyclerView = (RecyclerView)view.findViewById(R.id.videoRecyclerView);
+
         LoadVideoTask loadPhotoTask = new LoadVideoTask();
         loadPhotoTask.execute();
 
@@ -62,6 +63,7 @@ public class VideoFragment extends Fragment {
             }
         });
     }
+    // Load danh sách Video từ MediaStore
     private void initAllVideos() {
         mVideos = new ArrayList<>();
         String vidPath =null;
@@ -95,7 +97,7 @@ public class VideoFragment extends Fragment {
             }
         }
     }
-
+    // AsyncTask để load Video không ảnh hương UI
     private class LoadVideoTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected void onPreExecute() {

@@ -21,6 +21,9 @@ public class MyViewPagerAdapter extends FragmentStateAdapter {
             case 1:{
                 return new VideoFragment();
             }
+            case 2:{
+                return new AlbumFragment();
+            }
             default:{
                 return new PhotoFragment();
             }
@@ -29,6 +32,6 @@ public class MyViewPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 2;
+        return 3;
     }
 }

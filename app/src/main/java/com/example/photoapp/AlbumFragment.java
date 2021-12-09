@@ -1,10 +1,6 @@
 package com.example.photoapp;
 
 import android.Manifest;
-import android.app.SearchManager;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.location.Address;
@@ -12,31 +8,21 @@ import android.location.Geocoder;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.SearchView;
-import androidx.core.content.FileProvider;
 import androidx.exifinterface.media.ExifInterface;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.viewpager2.widget.ViewPager2;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -49,104 +35,67 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class PhotoFragment extends Fragment {
+public class AlbumFragment extends Fragment {
+    ArrayList<Photo> mPhotos = new ArrayList<>();
+    ArrayList<Album> mAlbums = new ArrayList<>();
+    RecyclerView mAlbumRecyclerView;
+    AlbumRecyclerViewAdapter mAlbumAdapter;
+    SwipeRefreshLayout swipeRefreshLayout;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_photo,container,false);
+        return inflater.inflate(R.layout.fragment_album,container,false);
     }
-
-    private static final int CAMERA_REQUEST =12;
-    private int STORAGE_PERMISSION_CODE = 1;
-
-    ArrayList<Photo> mPhotos = new ArrayList<>();
-    ArrayList<ListPhotos> mListPhotos = new ArrayList<>();
-    RecyclerView mListPhotosRecyclerView;
-    ListPhotosRecyclerViewAdapter mListPhotosAdapter;
-    SwipeRefreshLayout swipeRefreshLayout;
-
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        requestStoragePermission();
 
-        mListPhotosRecyclerView = (RecyclerView) view.findViewById(R.id.listphotosRecyclerView);
-        mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(getContext(), mListPhotos);
-        mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
-        mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mAlbumRecyclerView = (RecyclerView)view.findViewById(R.id.albumRecyclerView);
+        LoadAlbumTask loadAlbumTask = new LoadAlbumTask();
+        loadAlbumTask.execute();
+        mAlbumAdapter = new AlbumRecyclerViewAdapter(getContext(),mAlbums);
+        mAlbumRecyclerView.setAdapter(mAlbumAdapter);
+        mAlbumRecyclerView.setLayoutManager(new GridLayoutManager(getContext(),2));
 
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id.swipeRefreshLayout);
-        // Kéo xuống để Reload lại danh sách ảnh
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
-                loadPhotoTask.execute();
+                LoadAlbumTask loadAlbumTask = new LoadAlbumTask();
+                loadAlbumTask.execute();
             }
         });
-
-
-    }
-    // Xin quyền cho ứng dụng
-    private void requestStoragePermission() {
-        if (getContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
-                && getContext().checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
-                && getContext().checkSelfPermission(Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
-//            loadPhotoTask.execute();
-            initAllPhotos();
-        } else {
-            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.ACCESS_MEDIA_LOCATION};
-            requestPermissions(permissions, STORAGE_PERMISSION_CODE);
-        }
-    }
-
-    // Kiểm tra kết quả sau khi xin quyền
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == STORAGE_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
-                // Thành công
-                LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
-                loadPhotoTask.execute();
-            } else {
-                // Thất bại
-                Toast.makeText(getContext(), "Permission Denied", Toast.LENGTH_SHORT).show();
-            }
-        }
     }
 
     // Từ danh sách các hình ảnh chia thành danh sách của dánh sách các ảnh theo ngày tháng
-    public ArrayList<ListPhotos> getListOfListPhoto(ArrayList<Photo> photos) {
+    public ArrayList<Album> getListOfAlbum(ArrayList<Photo> photos) {
         if (photos.size() == 0) {
-            return new ArrayList<ListPhotos>();
+            return new ArrayList<Album>();
         }
-        String currentDate = photos.get(0).getStringDate();
-        ArrayList<ListPhotos> listPhotos = new ArrayList<>();
+        String currentAlbum = photos.get(0).getAlbumName();
+        ArrayList<Album> listAlbums = new ArrayList<>();
         ArrayList<Photo> tempPhotos = new ArrayList<>();
         for (int i = 0; i < photos.size(); i++) {
-            if (photos.get(i).getStringDate().equals(currentDate)) {
+            if (photos.get(i).getAlbumName().equals(currentAlbum)) {
                 tempPhotos.add(photos.get(i));
             } else {
-                listPhotos.add(new ListPhotos(currentDate, (ArrayList<Photo>) tempPhotos.clone()));
-                currentDate = photos.get(i).getStringDate();
+                listAlbums.add(new Album(currentAlbum, (ArrayList<Photo>) tempPhotos.clone()));
+                Log.e("TAG", currentAlbum );
+                currentAlbum = photos.get(i).getAlbumName();
                 tempPhotos.clear();
                 tempPhotos.add(photos.get(i));
             }
             if (i == photos.size() - 1) {
-                listPhotos.add(new ListPhotos(currentDate, (ArrayList<Photo>) tempPhotos.clone()));
+                listAlbums.add(new Album(currentAlbum, (ArrayList<Photo>) tempPhotos.clone()));
             }
         }
-        return listPhotos;
+        return listAlbums;
     }
     //  Lấy các hình ảnh từ bộ nhớ thông qua MediaStore
     private void initAllPhotos() {
         mPhotos = new ArrayList<>();
-        mListPhotos = new ArrayList<>();
+        mAlbums = new ArrayList<>();
         String[] projection = new String[]{
                 MediaStore.Images.Media._ID,
                 MediaStore.Images.Media.DISPLAY_NAME,
@@ -154,7 +103,7 @@ public class PhotoFragment extends Fragment {
                 MediaStore.Images.Media.DATA,
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME
         };
-        String sortOrder = MediaStore.Images.Media.DATE_ADDED + " ASC";
+        String sortOrder = MediaStore.Images.Media.BUCKET_DISPLAY_NAME + " ASC";
         try (Cursor cursor = getContext().getApplicationContext().getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 projection,
@@ -212,8 +161,8 @@ public class PhotoFragment extends Fragment {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        mPhotos.sort((date1, date2) -> date2.getDate().compareTo(date1.getDate()));
-        mListPhotos = getListOfListPhoto(mPhotos);
+        mPhotos.sort((date1, date2) -> date2.getAlbumName().compareTo(date1.getAlbumName()));
+        mAlbums = getListOfAlbum(mPhotos);
     }
     // Đổi chuỗi của này tháng thành dạng yyyy:MM:dd HH:mm:ss
     public Date dateFormater(String strDate) throws ParseException {
@@ -245,7 +194,7 @@ public class PhotoFragment extends Fragment {
     }
 
     // AsyncTask này dùng để load ảnh và không ảnh hưởng tới UI
-    private class LoadPhotoTask extends AsyncTask<Void, Void, Void> {
+    private class LoadAlbumTask extends AsyncTask<Void, Void, Void> {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -265,15 +214,8 @@ public class PhotoFragment extends Fragment {
         @Override
         protected void onPostExecute(Void unused) {
             super.onPostExecute(unused);
-            mListPhotosAdapter.setData(mListPhotos);
+            mAlbumAdapter.setData(mAlbums);
             swipeRefreshLayout.setRefreshing(false);
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
-        loadPhotoTask.execute();
     }
 }

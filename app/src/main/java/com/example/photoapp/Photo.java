@@ -1,9 +1,14 @@
 package com.example.photoapp;
 
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 
+import java.io.FileOutputStream;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -14,15 +19,17 @@ public class Photo implements Parcelable {
     private Uri imgUri;
     private Date date;
     private String geoLocation;
+    private String albumName;
 
 
 
-    public Photo(String imgName, String realPath, Uri imgUri, Date date, String geoLocation) {
+    public Photo(String imgName, String realPath, Uri imgUri, Date date, String geoLocation,String albumName) {
         this.imgName = imgName;
         this.imgUri = imgUri;
         this.date = date;
         this.geoLocation = geoLocation;
         this.realPath = realPath;
+        this.albumName = albumName;
     }
 
     protected Photo(Parcel in) {
@@ -30,6 +37,9 @@ public class Photo implements Parcelable {
         imgUri = in.readParcelable(Uri.class.getClassLoader());
         geoLocation = in.readString();
         realPath = in.readString();
+        albumName = in.readString();
+        long tmpDate = in.readLong();
+        this.date = tmpDate == -1 ? null : new Date(tmpDate);
     }
 
     public static final Creator<Photo> CREATOR = new Creator<Photo>() {
@@ -76,6 +86,16 @@ public class Photo implements Parcelable {
         this.geoLocation = geoLocation;
     }
 
+
+    public String getAlbumName() {
+        return albumName;
+    }
+
+    public void setAlbumName(String albumName) {
+        this.albumName = albumName;
+    }
+
+
     public String getStringDate(){
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");
         String strDate= formatter.format(date);
@@ -100,5 +120,7 @@ public class Photo implements Parcelable {
         dest.writeParcelable(imgUri, flags);
         dest.writeString(geoLocation);
         dest.writeString(realPath);
+        dest.writeString(albumName);
+        dest.writeLong(date!=null?date.getTime():-1);
     }
 }

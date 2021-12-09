@@ -95,6 +95,10 @@ public class MainActivity extends AppCompatActivity {
                         tab.setText("Video");
                         break;
                     }
+                    case 2: {
+                        tab.setText("Album");
+                        break;
+                    }
                 }
             }
         }).attach();
@@ -115,7 +119,9 @@ public class MainActivity extends AppCompatActivity {
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
+
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        Log.e("TAG", storageDir.toString() );
         File image = File.createTempFile(
                 imageFileName,
                 ".jpg",
