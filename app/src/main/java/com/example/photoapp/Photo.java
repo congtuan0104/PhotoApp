@@ -20,6 +20,7 @@ public class Photo implements Parcelable {
     private Date date;
     private String geoLocation;
     private String albumName;
+    public boolean isSelected = false;
 
 
 

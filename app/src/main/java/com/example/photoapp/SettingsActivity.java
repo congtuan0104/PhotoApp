@@ -10,16 +10,19 @@ import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.SwitchPreferenceCompat;
 
 import csu.matos.fragment.InfoFragment;
 
 public class SettingsActivity extends AppCompatActivity {
     Button btnPin;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
+        //boolean isSecurity = ((SwitchPreferenceCompat) findPreference());
         if (savedInstanceState == null) {
             getSupportFragmentManager()
                     .beginTransaction()

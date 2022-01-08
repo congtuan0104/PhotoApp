@@ -7,6 +7,8 @@ import androidx.core.content.FileProvider;
 
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.app.RecoverableSecurityException;
+import android.app.WallpaperManager;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Intent;
@@ -80,29 +82,8 @@ public class DetailPhotoActivity extends AppCompatActivity {
         deletePhotoBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                File photoFile = new File(mPhoto.getRealPath());
-                if (photoFile.exists()) {
-                    if (photoFile.delete()) {
-                        Toast.makeText(DetailPhotoActivity.this, "Deleted", Toast.LENGTH_SHORT).show();
-                        finish();
-                    } else {
-                        //Xóa ảnh có hiển thi Dialog cho người dùng xác nhận
-                        ContentResolver contentResolver = DetailPhotoActivity.this.getContentResolver();
-                        ArrayList<Uri> uriList = new ArrayList<>();
-                        uriList.add(mPhoto.getImgUri());
+               deleteImage(mPhoto);
 
-                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                            PendingIntent editPendingIntent = MediaStore.createDeleteRequest(contentResolver, uriList);
-                            try {
-                                startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
-                            } catch (IntentSender.SendIntentException e) {
-                                e.printStackTrace();
-                            }
-
-                        }
-                    }
-
-                }
             }
         });
         detailMoreBtn = findViewById(R.id.detailMore);
@@ -148,6 +129,9 @@ public class DetailPhotoActivity extends AppCompatActivity {
         }
         if (requestCode == DELETE_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    deleteImage(mPhoto);
+                }
                 finish();
             } else {
                 Toast.makeText(this, "Can't Delete", Toast.LENGTH_SHORT).show();
@@ -170,6 +154,21 @@ public class DetailPhotoActivity extends AppCompatActivity {
                         detaiInfolIntent.putExtras(bundle);
                         startActivity(detaiInfolIntent);
                         break;
+                    }
+                    case R.id.detailSetWallpaper:{
+                        Bitmap bitmap = null;
+                        try {
+                            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), mPhoto.getImgUri());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        final WallpaperManager wallpaperManager = WallpaperManager.getInstance(getApplicationContext());
+                        try {
+                            wallpaperManager.setBitmap(bitmap);
+                            Toast.makeText(DetailPhotoActivity.this, "Set WallPater Success", Toast.LENGTH_SHORT).show();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
                 return false;
@@ -206,4 +205,41 @@ public class DetailPhotoActivity extends AppCompatActivity {
         startActivity(Intent.createChooser(shareIntent, null));
     }
 
+    private void deleteImage(Photo photo){
+        File photoFile = new File(photo.getRealPath());
+
+        if (photoFile.exists()) {
+            try {
+                getContentResolver().delete(photo.getImgUri(),null,null);
+                Toast.makeText(DetailPhotoActivity.this, "Deleted", Toast.LENGTH_SHORT).show();
+            }
+            catch (SecurityException e){
+                //Xóa ảnh có hiển thi Dialog cho người dùng xác nhận
+                ContentResolver contentResolver = DetailPhotoActivity.this.getContentResolver();
+                ArrayList<Uri> uriList = new ArrayList<>();
+                uriList.add(photo.getImgUri());
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                    PendingIntent editPendingIntent = MediaStore.createDeleteRequest(contentResolver, uriList);
+                    try {
+                        startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
+                    } catch (IntentSender.SendIntentException e1) {
+                        e.printStackTrace();
+                    }
+
+                }
+                else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    RecoverableSecurityException recoverableSecurityException = (RecoverableSecurityException) e;
+                    PendingIntent editPendingIntent = recoverableSecurityException.getUserAction().getActionIntent();
+                    try {
+                        startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
+                    } catch (IntentSender.SendIntentException e1) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }
+        }
+    }
 }
+

@@ -9,4 +9,12 @@
         android:layout_margin="3dp"
         android:background="@drawable/ripple_effect"
         />
+    <CheckBox
+        android:id="@+id/checkbox"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:buttonTint="@color/black"
+        />
 </RelativeLayout>

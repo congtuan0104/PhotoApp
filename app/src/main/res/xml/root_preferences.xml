@@ -26,6 +26,7 @@
     <PreferenceCategory app:title="@string/security_title">
 
         <SwitchPreferenceCompat
+
             app:key="securityKey"
             app:title="@string/security"
             app:summaryOff="@string/passkey_summary_off"

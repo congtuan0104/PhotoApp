@@ -1,20 +1,28 @@
 package com.example.photoapp;
 
 import android.Manifest;
+import android.app.PendingIntent;
+import android.app.RecoverableSecurityException;
 import android.app.SearchManager;
+import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,6 +48,7 @@ import com.google.android.material.tabs.TabLayoutMediator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
@@ -48,8 +57,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
-public class PhotoFragment extends Fragment {
+public class PhotoFragment extends Fragment implements PhotoRecyclerViewAdapter.OnImageClickListener {
+    private static final int DELETE_REQUEST_CODE = 13;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -59,12 +71,63 @@ public class PhotoFragment extends Fragment {
     private static final int CAMERA_REQUEST =12;
     private int STORAGE_PERMISSION_CODE = 1;
 
-    ArrayList<Photo> mPhotos = new ArrayList<>();
+    public static ArrayList<Photo> mPhotos = new ArrayList<>();
+    public static ArrayList<Photo> selectedPhotos = new ArrayList<>();
     ArrayList<ListPhotos> mListPhotos = new ArrayList<>();
+    ArrayList<String> albumNames  = new ArrayList<>();
+
     RecyclerView mListPhotosRecyclerView;
     ListPhotosRecyclerViewAdapter mListPhotosAdapter;
     SwipeRefreshLayout swipeRefreshLayout;
 
+    public static boolean multiSelectMode =false;
+    private ActionMode actionMode;
+
+    ActionMode.Callback actionModeCallBack = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            multiSelectMode = true;
+            getActivity().getMenuInflater().inflate(R.menu.multi_select_menu,menu);
+
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+
+            if(item.getItemId()==R.id.delete){
+                getSelectedImage();
+                deleteMultiImage(selectedPhotos);
+
+            }
+            if(item.getItemId()==R.id.album){
+                getSelectedImage();
+                AlbumDialogFragment albumDialogFragment = new AlbumDialogFragment(albumNames,selectedPhotos);
+                albumDialogFragment.show(getActivity().getSupportFragmentManager(),albumDialogFragment.getTag());
+            }
+            actionMode= null;
+            multiSelectMode=false;
+            LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
+            loadPhotoTask.execute();
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            multiSelectMode = false;
+            mListPhotosAdapter.notifyDataSetChanged();
+            for(int i=0;i<mPhotos.size();i++){
+                mPhotos.get(i).isSelected = false;
+            }
+            selectedPhotos.clear();
+            actionMode = null;
+        }
+    };
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -72,7 +135,7 @@ public class PhotoFragment extends Fragment {
         requestStoragePermission();
 
         mListPhotosRecyclerView = (RecyclerView) view.findViewById(R.id.listphotosRecyclerView);
-        mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(getContext(), mListPhotos);
+        mListPhotosAdapter = new ListPhotosRecyclerViewAdapter(getContext(), mListPhotos,this);
         mListPhotosRecyclerView.setAdapter(mListPhotosAdapter);
         mListPhotosRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -93,9 +156,8 @@ public class PhotoFragment extends Fragment {
         if (getContext().checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
                 && getContext().checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
                 && getContext().checkSelfPermission(Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
-//            loadPhotoTask.execute();
-            initAllPhotos();
+            LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
+            loadPhotoTask.execute();
         } else {
             String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.ACCESS_MEDIA_LOCATION};
             requestPermissions(permissions, STORAGE_PERMISSION_CODE);
@@ -155,7 +217,7 @@ public class PhotoFragment extends Fragment {
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME
         };
         String sortOrder = MediaStore.Images.Media.DATE_ADDED + " ASC";
-        try (Cursor cursor = getContext().getApplicationContext().getContentResolver().query(
+        try (Cursor cursor = getContext().getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 null,
@@ -203,7 +265,19 @@ public class PhotoFragment extends Fragment {
                 String name = cursor.getString(nameCol);
                 String realPath = cursor.getString(dataCol);
                 String album = cursor.getString(albumCol);
-                mPhotos.add(new Photo(name,realPath, photoUri, dateTaken, position,album));
+                Photo photo = new Photo(name,realPath, photoUri, dateTaken, position,album);
+                for(int i=0;i<mPhotos.size();i++){
+                    if(mPhotos.get(i).getImgName().equals(name)){
+                        mPhotos.remove(i);
+                    }
+                }
+                for(int i=0;i<albumNames.size();i++){
+                    if(albumNames.get(i).equals(album)){
+                        albumNames.remove(i);
+                    }
+                }
+                albumNames.add(album);
+                mPhotos.add(photo);
             }
         } catch (ParseException e) {
             e.printStackTrace();
@@ -243,7 +317,19 @@ public class PhotoFragment extends Fragment {
 
         return location;
     }
-
+//    public ArrayList<String> getListOfAlbumName(ArrayList<Photo> photos) {
+//        if (photos.size() == 0) {
+//            return new ArrayList<String>();
+//        }
+//        ArrayList<String> albumNames = new ArrayList<>();
+//        for (int i = 0; i < photos.size(); i++) {
+//            String albumName = photos.get(i).getAlbumName();
+//            if(!albumNames.contains(albumName)){
+//                albumNames.add(albumName);
+//            }
+//        }
+//        return albumNames;
+//    }
     // AsyncTask này dùng để load ảnh và không ảnh hưởng tới UI
     private class LoadPhotoTask extends AsyncTask<Void, Void, Void> {
         @Override
@@ -275,5 +361,58 @@ public class PhotoFragment extends Fragment {
         super.onResume();
         LoadPhotoTask loadPhotoTask = new LoadPhotoTask();
         loadPhotoTask.execute();
+    }
+    @Override
+    public void onImageClick(int position) {
+    }
+
+    @Override
+    public void onImageLongClick(int position) {
+        if(actionMode==null){
+            actionMode = getActivity().startActionMode(actionModeCallBack);
+        }
+
+    }
+    void getSelectedImage(){
+        for(int i=0;i<mPhotos.size();i++){
+            if(mPhotos.get(i).isSelected){
+                selectedPhotos.add(mPhotos.get(i));
+            }
+        }
+    }
+    public void deleteMultiImage(ArrayList<Photo> photos){
+        ContentResolver contentResolver = getContext().getContentResolver();
+        ArrayList<Uri> uriList = new ArrayList<Uri>();
+        for(int i=0;i<photos.size();i++){
+            File photoFile = new File(photos.get(i).getRealPath());
+            if (photoFile.exists()) {
+                //Xóa ảnh có hiển thi Dialog cho người dùng xác nhận
+                uriList.add(photos.get(i).getImgUri());
+            }
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            PendingIntent editPendingIntent = MediaStore.createDeleteRequest(contentResolver, uriList);
+            try {
+                getActivity().startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            try {
+                for(int i=0;i<uriList.size();i++){
+                    getContext().getContentResolver().delete(uriList.get(i),null,null);
+                }
+            }
+            catch (SecurityException e){
+                RecoverableSecurityException recoverableSecurityException = (RecoverableSecurityException) e;
+                PendingIntent editPendingIntent = recoverableSecurityException.getUserAction().getActionIntent();
+                try {
+                    getActivity().startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
+                } catch (IntentSender.SendIntentException e1) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 }

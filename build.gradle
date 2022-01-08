@@ -6,6 +6,7 @@ buildscript {
         flatDir {
             dirs 'libs'
         }
+
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.2.1'
@@ -14,7 +15,6 @@ buildscript {
         // in the individual module build.gradle files
     }
 }
-
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

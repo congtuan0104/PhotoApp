@@ -75,7 +75,7 @@ public class VideoFragment extends Fragment {
                 MediaStore.Video.Media.DATA,
                 MediaStore.Video.Thumbnails.DATA
         };
-        try (Cursor cursor = getContext().getApplicationContext().getContentResolver().query(
+        try (Cursor cursor = getContext().getContentResolver().query(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 null,
@@ -122,4 +122,5 @@ public class VideoFragment extends Fragment {
             swipeRefreshLayout.setRefreshing(false);
         }
     }
+
 }

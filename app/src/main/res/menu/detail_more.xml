@@ -7,12 +7,10 @@
         android:id="@+id/detailSetWallpaper"/>
     <item android:title="Bắt đầu trình chiếu"
         android:id="@+id/detailSlideShow"/>
-    <item android:title="Đổi tên"
-        android:id="@+id/detailRename"/>
+
     <item android:title="Chi tiết"
         android:id="@+id/detailDetail"/>
-    <item android:title="Sao chép"
-        android:id="@+id/detailCopy"/>
+
 
 
 </menu>

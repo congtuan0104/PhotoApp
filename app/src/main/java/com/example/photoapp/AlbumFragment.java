@@ -104,7 +104,7 @@ public class AlbumFragment extends Fragment {
                 MediaStore.Images.Media.BUCKET_DISPLAY_NAME
         };
         String sortOrder = MediaStore.Images.Media.BUCKET_DISPLAY_NAME + " ASC";
-        try (Cursor cursor = getContext().getApplicationContext().getContentResolver().query(
+        try (Cursor cursor = getContext().getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 projection,
                 null,
@@ -193,6 +193,7 @@ public class AlbumFragment extends Fragment {
         return location;
     }
 
+
     // AsyncTask này dùng để load ảnh và không ảnh hưởng tới UI
     private class LoadAlbumTask extends AsyncTask<Void, Void, Void> {
         @Override
@@ -217,5 +218,11 @@ public class AlbumFragment extends Fragment {
             mAlbumAdapter.setData(mAlbums);
             swipeRefreshLayout.setRefreshing(false);
         }
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        LoadAlbumTask loadAlbumTask = new LoadAlbumTask();
+        loadAlbumTask.execute();
     }
 }

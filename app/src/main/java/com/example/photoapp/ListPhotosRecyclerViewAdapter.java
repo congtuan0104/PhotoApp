@@ -17,10 +17,12 @@ import java.util.ArrayList;
 public class ListPhotosRecyclerViewAdapter extends RecyclerView.Adapter<ListPhotosRecyclerViewAdapter.MyViewHolder> {
     private Context mContext;
     private ArrayList<ListPhotos> mListPhotos;
+    private PhotoRecyclerViewAdapter.OnImageClickListener listener;
 
-    public ListPhotosRecyclerViewAdapter(Context mContext, ArrayList<ListPhotos> mListPhotos) {
+    public ListPhotosRecyclerViewAdapter(Context mContext, ArrayList<ListPhotos> mListPhotos,PhotoRecyclerViewAdapter.OnImageClickListener listener) {
         this.mContext = mContext;
         this.mListPhotos = mListPhotos;
+        this.listener = listener;
     }
     public void setData(ArrayList<ListPhotos> mListPhotos){
         this.mListPhotos = mListPhotos;
@@ -38,6 +40,7 @@ public class ListPhotosRecyclerViewAdapter extends RecyclerView.Adapter<ListPhot
         String strDate = mListPhotos.get(position).getDate();
         ArrayList<Photo> photos = mListPhotos.get(position).getPhotos();
         PhotoRecyclerViewAdapter mAdapter = new PhotoRecyclerViewAdapter(mContext, photos);
+        mAdapter.setListener(listener);
         holder.dateTxt.setText(strDate);
         holder.photoRecyclerView.setAdapter(mAdapter);
         holder.photoRecyclerView.setLayoutManager(new GridLayoutManager(mContext,3));

@@ -12,10 +12,15 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.app.RecoverableSecurityException;
 import android.app.SearchManager;
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -29,6 +34,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.PrecomputedText;
 import android.util.Log;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -57,7 +63,8 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
-    private static final int CAMERA_REQUEST =12;
+    private static final int CAMERA_REQUEST =11;
+    private static final int DELETE_REQUEST_CODE = 13;
     private int STORAGE_PERMISSION_CODE = 1;
     private TabLayout mTablayout;
     private ViewPager2 mViewPager;
@@ -72,10 +79,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         SharedPreferences prefs = getSharedPreferences("my_pin_pref", MODE_PRIVATE);
-        if(prefs.contains("pin")){
+        SharedPreferences security = getSharedPreferences("com.example.app", MODE_PRIVATE);
+        boolean isSecurity = security.getBoolean("securityKey",true);
+        if(prefs.contains("pin") && isSecurity==true){
             Intent passIntent = new Intent(getApplicationContext(), PassAuthentication.class);
             startActivity(passIntent);
-
         }
 
         mTablayout = (TabLayout) findViewById(R.id.tab_layout);
@@ -158,6 +166,15 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+        if (requestCode == DELETE_REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                if (android.os.Build.VERSION.SDK_INT == android.os.Build.VERSION_CODES.Q) {
+                    deleteMultiImage(PhotoFragment.selectedPhotos);
+                }
+            } else {
+                Toast.makeText(this, "Can't Delete", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
 
@@ -185,6 +202,13 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent2);
                 break;
             }
+            case R.id.slideshow:{
+                Intent intent = new Intent(this,SlideShowActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putParcelableArrayList("list_photo",PhotoFragment.mPhotos);
+                intent.putExtras(bundle);
+                startActivity(intent);
+            }
 
         }
         ;
@@ -192,4 +216,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    public void deleteMultiImage(ArrayList<Photo> photos){
+        ContentResolver contentResolver = getContentResolver();
+        ArrayList<Uri> uriList = new ArrayList<Uri>();
+        for(int i=0;i<photos.size();i++){
+            File photoFile = new File(photos.get(i).getRealPath());
+            if (photoFile.exists()) {
+                //Xóa ảnh có hiển thi Dialog cho người dùng xác nhận
+                uriList.add(photos.get(i).getImgUri());
+            }
+        }
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+            PendingIntent editPendingIntent = MediaStore.createDeleteRequest(contentResolver, uriList);
+            try {
+                startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            try {
+                for(int i=0;i<uriList.size();i++){
+                    getContentResolver().delete(uriList.get(i),null,null);
+                }
+            }
+            catch (SecurityException e){
+                RecoverableSecurityException recoverableSecurityException = (RecoverableSecurityException) e;
+                PendingIntent editPendingIntent = recoverableSecurityException.getUserAction().getActionIntent();
+                try {
+                    startIntentSenderForResult(editPendingIntent.getIntentSender(), DELETE_REQUEST_CODE, null, 0, 0, 0);
+                } catch (IntentSender.SendIntentException e1) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 }

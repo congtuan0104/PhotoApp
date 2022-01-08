@@ -13,8 +13,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +30,16 @@ import java.util.Date;
 public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecyclerViewAdapter.MyViewHolder> {
     ArrayList<Photo> photos;
     Context context;
+
+    public interface OnImageClickListener{
+        void onImageClick(int position);
+        void onImageLongClick(int position);
+    }
+    private  OnImageClickListener listener;
+
+    public void setListener(OnImageClickListener listener) {
+        this.listener = listener;
+    }
 
     public PhotoRecyclerViewAdapter(Context context, ArrayList<Photo> photos) {
         this.context = context;
@@ -49,7 +61,18 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
                 .load(imgUri)
                 .centerCrop()
                 .into(holder.img);
-
+        if(!PhotoFragment.multiSelectMode){
+            holder.checkBox.setVisibility(View.GONE);
+        }
+        else {
+            holder.checkBox.setVisibility(View.VISIBLE);
+        }
+        if(photos.get(position).isSelected){
+            holder.checkBox.setChecked(true);
+        }
+        else{
+            holder.checkBox.setChecked(false);
+        }
         holder.img.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -63,7 +86,29 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
         holder.img.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickGoToDetailImg(photos.get(position));
+                if(PhotoFragment.multiSelectMode){
+                    listener.onImageClick(position);
+                    if(photos.get(position).isSelected){
+                        photos.get(position).isSelected = false;
+                    }
+                    else{
+                        photos.get(position).isSelected = true;
+                    }
+                    notifyDataSetChanged();
+                }
+                else{
+                    onClickGoToDetailImg(photos.get(position));
+                }
+
+            }
+        });
+        holder.img.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                listener.onImageLongClick(position);
+                photos.get(position).isSelected = true;
+                notifyDataSetChanged();
+                return true;
             }
         });
     }
@@ -84,10 +129,12 @@ public class PhotoRecyclerViewAdapter extends RecyclerView.Adapter<PhotoRecycler
     public class MyViewHolder extends RecyclerView.ViewHolder {
         private TextView photoTextView;
         private ImageView img;
+        private CheckBox checkBox;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             img = (ImageView) itemView.findViewById(R.id.photo);
+            checkBox =(CheckBox) itemView.findViewById(R.id.checkbox);
         }
     }
 }
