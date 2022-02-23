@@ -1,6 +1,8 @@
 # ỨNG DỤNG XEM ALBUM ẢNH (GALLERY 16)
 Đồ án lập trình ứng dụng di động - Nhóm 16 - HCMUS
 
+FILE APK: [Link](https://drive.google.com/file/d/1qc1tY_McrB8XI432xG9CmR-pICKrGBid/view?usp=sharing)
+
 ## Thông tin thành viên
 1. Trịnh Quyền Đế - 19120192
 2. Phan Công Tuấn - 19120418
